@@ -15,4 +15,20 @@
 
 .ansbut {
   margin: 5px;
+  font-size: x-large;
+  background-color: #fff;
+}
+
+.word {
+  font-size:xx-large;
+}
+
+.menubut {
+  margin: 5px;
+  font-size: large;
+}
+
+button {
+  background-color: #555;
+  border-radius: 5px;
 }

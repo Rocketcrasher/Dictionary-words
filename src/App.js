@@ -1,26 +1,60 @@
 import { useState } from 'react';
 import './App.css';
-import list from "./data/words.json";
-let failedWords = [];
-  let count = 0;
-function App() {
-  const [word, setWord] = useState(list[0]);
-  const [field, setField] = useState('Click to say and show answer');
+import file from "./data/words";
 
-  // const transformText = () => {
-  //   setWord("some text")
-  //   //list = "дивиденд, дизайн, дилемма, дилижанс, дирижер, диссонанс, дифирамб, дубликат, иждивенец, инициатива, инцидент, квитанция, криминальный, критерий, кульминация"
-  //   //answer = "\"дивиденд\", \"дизайн\", ..."
-  //   let answer = '';
-  //   let counter = 0;
-  //   for (let i = 0; i < list.length; i++) {
-  //     if (list[i] == ',') {
-  //       answer = answer + '"' + list.slice(counter, i) + '", ';
-  //       counter = i + 2;
-  //     }
-  //   }
-  //   setWord(answer);
-  // }
+const lists = file;
+let failedWords = [];
+let count = 0;
+let list = lists[1];
+const types = [
+  {"text": 'Из правил', "isWork": 1},
+  {"text": 'Ударения', "isWork": 1},
+  {"text": 'Двойные', "isWork": 1},
+  {"text": 'Н и нн', "isWork": 1},
+  {"text": 'Наречия', "isWork": 1},
+  {"text": 'Предлоги', "isWork": 1}
+];
+
+function App() {
+  const [word, setWord] = useState(list[17]);
+  const [field, setField] = useState('Озвучить и показать ответ');
+  const [description, setDescription] = useState('');
+
+
+  const transformText = () => {
+    //list = "дивиденд, дизайн, дилемма, дилижанс, дирижер, диссонанс, дифирамб, дубликат, иждивенец, инициатива, инцидент, квитанция, криминальный, критерий, кульминация"
+    //answer = "\"дивиденд\", \"дизайн\", ..."
+    const str = lists[0][0]
+    let answer = '';
+    let counter = 0;
+    for (let i = 0; i < str.length; i++) {
+      if (str[i] == ',') {
+        answer = answer + '"' + str.slice(counter, i) + '", ';
+        counter = i + 2;
+      }
+    }
+    setDescription(answer);
+  }
+
+  const changeGroup = (elem) => {
+    console.log(elem);
+    console.log(types);
+    if(types[elem.attributes.index.value].isWork)  {
+      types[elem.attributes.index.value].isWork = 0;
+      elem.style.background = '#fff';
+    }
+    else {
+      types[elem.attributes.index.value].isWork = 1;
+      elem.style.background = '#555';
+    }
+    list = [];
+    for (let i = 0; i < types.length; i++) {
+      if (types[i].isWork) {
+        list = list.concat(lists[i]);
+      }
+    }
+  }
+  
 
   const changeWord = (ans) => {
     setField('Click to say and show answer');
@@ -51,10 +85,22 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
+        <div className='description' onClick={transformText}>{description}</div>
+
+        <br /><br />
+
         <div className='word' onClick={sayWord}>{field}</div>
-        <div>
-          <button className='ansbut' onClick={() => changeWord(1)}>Fail</button>
-          <button className='ansbut' onClick={() => changeWord(0)}>Correct</button>
+        <div className='answerpanel'>
+          <button className='ansbut' onClick={() => changeWord(1)}>Ошибка</button>
+          <button className='ansbut' onClick={() => changeWord(0)}>Правильно</button>
+        </div>
+
+        <br /><br />
+
+        <div className='menu'>
+          {types.map((elem, i) => {
+            return <button className='menubut' key={i} index={i} onClick={(e)=>{ changeGroup(e.target); }}>{elem.text}</button>
+          })}
         </div>
       </header>
     </div>
