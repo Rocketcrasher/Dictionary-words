@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import file from "./data/words";
 
@@ -19,7 +19,6 @@ function App() {
   const [word, setWord] = useState(list[17]);
   const [field, setField] = useState('Озвучить и показать ответ');
   const [description, setDescription] = useState('');
-
 
   const transformText = () => {
     //list = "дивиденд, дизайн, дилемма, дилижанс, дирижер, диссонанс, дифирамб, дубликат, иждивенец, инициатива, инцидент, квитанция, криминальный, критерий, кульминация"
@@ -57,7 +56,7 @@ function App() {
   
 
   const changeWord = (ans) => {
-    setField('Click to say and show answer');
+    setField('Нажать для прослушивани и просмотра ответа');
 
     if (ans && !failedWords.find(elem=>elem == word)) {
         failedWords.push(word);
@@ -65,7 +64,11 @@ function App() {
     else if (!ans && failedWords.find(elem=>elem == word)) {
       failedWords.shift();
     }
-    const k = 4;
+    else if (ans && failedWords.find(elem=>elem==word)) {
+      failedWords.shift();
+      failedWords.push(word);
+    }
+    const k = 5;
     if (count % k == Math.floor(k * Math.random()) && failedWords.length != 0){
       setWord(failedWords[0]);
     }
@@ -76,11 +79,29 @@ function App() {
     count++; 
   }
 
-  const sayWord = () => {
+  const sayWord = useCallback(() => {
     window.speechSynthesis.cancel();
-    setField(word);
     window.speechSynthesis.speak(new SpeechSynthesisUtterance(word));
-  }
+  }, [word])
+
+  const downHandler =useCallback(({ key }) => {
+    console.log(word)
+    if (key >= 'a' && key <= 'z') {
+      window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance(word));
+    }
+    else if (key == ' ') setField(word);
+    else if (key >= '1' && key <= '3') changeWord(1);
+    else if (key >= '4' && key <= '9') changeWord(0);
+  }, [ word])
+  console.log(word)
+
+  useEffect(() => {
+    window.addEventListener("keydown", downHandler);
+    return () => {
+      window.removeEventListener("keydown", downHandler);
+    };
+  }, [word]); // Empty array ensures that effect is only run on mount and unmount
   
   return (
     <div className="App">
@@ -88,8 +109,7 @@ function App() {
         <div className='description' onClick={transformText}>{description}</div>
 
         <br /><br />
-
-        <div className='word' onClick={sayWord}>{field}</div>
+        <div className='word' onClick={()=>{sayWord(); setField(word);}}>{field}</div>
         <div className='answerpanel'>
           <button className='ansbut' onClick={() => changeWord(1)}>Ошибка</button>
           <button className='ansbut' onClick={() => changeWord(0)}>Правильно</button>
@@ -107,6 +127,28 @@ function App() {
   );
 
   
+  
 }
 
 export default App;
+
+
+function useKeyPress(targetKey) {
+  // State for keeping track of whether key is pressed
+  const [keyPressed, setKeyPressed] = useState(false);
+  // If pressed key is our target key then set to true
+  function downHandler({ key }) {
+    if (key === targetKey) {
+      setKeyPressed(true);
+    }
+  }
+  // If released key is our target key then set to false
+  const upHandler = ({ key }) => {
+    if (key === targetKey) {
+      setKeyPressed(false);
+    }
+  };
+  // Add event listeners
+  
+  return keyPressed;
+}
